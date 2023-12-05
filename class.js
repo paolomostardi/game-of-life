@@ -19,6 +19,9 @@
 */
 
 
+//color is 3 variables that indicate r g b
+
+
 
 class square{
     lineWidth = 0;
@@ -83,43 +86,6 @@ class square{
 
 }
 
-// todo 
-// change the life to the board from the square 
-
-/*
-
-
-
-Rules according to wikipedia:
-
-
-The universe of the Game of Life is an infinite,
-two-dimensional orthogonal grid of square cells,
-each of which is in one of two possible states,
-live or dead, (or populated and unpopulated, respectively).
-Every cell interacts with its eight neighbours,
-which are the cells that are horizontally, vertically,
-or diagonally adjacent. At each step in time, the following transitions occur:
-
-1. Any live cell with fewer than two live neighbours dies, as if by underpopulation.
-2. Any live cell with two or three live neighbours lives on to the next generation.
-3. Any live cell with more than three live neighbours dies, as if by overpopulation.
-4. Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
-
-
-These rules, which compare the behavior of the automaton to real life, can be condensed into the following:
-
-Any live cell with two or three live neighbours survives.
-Any dead cell with three live neighbours becomes a live cell.
-All other live cells die in the next generation. Similarly, all other dead cells stay dead.
-The initial pattern constitutes the seed of the system. The first generation is created by applying the above rules simultaneously to every cell in the seed; births and deaths occur simultaneously, and the discrete moment at which this happens is sometimes called a tick. Each generation is a pure function of the preceding one. The rules continue to be applied repeatedly to create further generations.
-
-*/
-
-
-
-
-
 class board{
     space = 3;
     wiewX = 0;
@@ -147,7 +113,6 @@ class board{
         for(let i = 0; i < this.max; i++)
             for(let j = 0; j< this.max ; j++)
                 this.matrix[i][j].update(ctx);  
-
 
     }
 
@@ -185,14 +150,15 @@ class board{
     changeColor(color){
        this.color = color; 
     }
-
-    drawPiece(x,y){ // called when click on a square
+    
+    // method called when a square is clicked 
+    drawPiece(x,y){ 
         if (this.matrix[x][y].life){  // if the cell is alive and is clicked is killed
             this.matrix[x][y].life = false;     
             return; 
             }
         this.matrix[x][y].color = this.color;
-        this.matrix[x][y].life = true; //true gamer moment 
+        this.matrix[x][y].life = true; 
               
     }
 
@@ -319,4 +285,260 @@ function avarageColor3(color1,color2,color3){
     finalColor.h = Math.floor((color1.h + color2.h + color3.h) / 3 );
   
     return finalColor;
+}
+
+
+
+
+function clear(ctx){
+    ctx.clearRect(0,0,1000,1000);
+}
+
+class color{    
+    constructor(h,s,l){
+        this.h = h;
+        this.s = s;
+        this.l = l;
+    }
+
+}
+// define all different colors
+
+var lightRed = new color(8,80,73);
+var red = new color(309, 100, 75);
+var lightGreen = new color(180,220,185);
+var green = new color( 115, 86, 58);
+var purple = new color(220,10,50);
+var yellow = new color(255,255,10);
+var black = new color(0,0,0);
+var orange = new color(39,93,54.7)
+var lightBlue = new color(180, 200, 236);
+var blue = new color(180, 95, 65);
+var grey = new color(0,0,80);
+var colorToPut = red;
+var canvasSize = 950;
+var squareSize = 200; // define how many square there are
+var x = 0;
+var y = 0;
+
+// declare al the variables that need to be declared only once 
+
+    
+var gameStop = false;
+var notGameStarted = true;
+var currentSpeed = 400;
+
+var gameTimeID;
+var intervalID = window.setInterval(game,100);
+var gameBoard = new board(canvasSize,squareSize); // declare main board  and set the matrix on a size of 200x200 elements
+
+var wiewX = 100;
+var wiewY = 100;
+
+squareSize = 30;
+gameBoard.changeSize(canvasSize,squareSize);
+
+gameBoard.changeWiew(wiewX,wiewY);
+
+
+
+// used to trow all the function of the game, called in loop by setInterval
+
+function game(){
+    var gameCanvas = document.getElementById('canvas');
+    var ctx = gameCanvas.getContext('2d');
+    
+    clear(ctx);            
+    gameBoard.update(ctx);    
+}
+
+
+
+
+function logMovement(event){
+  x = event.offsetX;
+  y = event.offsetY;
+}
+    
+function holdUp(event){
+    x -= event.offsetX;
+    y -= event.offsetY;
+    x = Math.floor(x/(canvasSize/gameBoard.n)) ;
+    y = Math.floor(y/(canvasSize/gameBoard.n)) ;
+    wiewX += x;
+    wiewY += y;
+
+    if (wiewX < 0)
+        wiewX = 0;
+    if (wiewY < 0)
+        wiewY = 0;
+
+    gameBoard.changeWiew(wiewX,wiewY);
+}
+
+
+function checkClickBoard(event){
+
+    // obtaining the coordinate of the click
+    // math floor bring the variable to an integer
+
+    let x =  Math.floor(event.offsetX/(canvasSize/gameBoard.n)); // gameboard.n is the amount of visible squares
+    let y =  Math.floor(event.offsetY/(canvasSize/gameBoard.n)); // canvasSize is the size of the canvas
+
+    return [x,y]; 
+}
+
+function clickedBoard(event){
+   
+    let coordinate = checkClickBoard(event);
+   
+    gameBoard.drawPiece(coordinate[0] + wiewX,coordinate[1] + wiewY);  
+    
+}
+
+function tryGame(){
+    //alert(blue.h);
+    gameBoard.updateGame();            
+}
+
+function debug(){
+    gameBoard.debug = true;
+}
+
+function changeSize(){
+    squareSize = 6;
+    gameBoard.changeSize(canvasSize,squareSize);
+   
+}
+
+function zoomSize(size){        
+    squareSize = size;
+    gameBoard.changeSize(canvasSize,squareSize);
+}
+
+
+function startGame(){
+    if(notGameStarted){
+        gameTimeID = window.setInterval(tryGame, currentSpeed);
+        notGameStarted = false;
+    }
+}
+
+function stopGame(){
+    window.clearInterval(gameTimeID);
+    notGameStarted = true;
+}
+
+function leftMove(){
+    if (wiewX <= 0)
+        return; 
+    wiewX--;
+    gameBoard.changeWiew(wiewX,wiewY);
+}
+Kali_x64
+function rightMove(){
+    wiewX++;
+    gameBoard.changeWiew(wiewX,wiewY);
+}
+
+
+
+function upMove(){
+    wiewY++;
+    gameBoard.changeWiew(wiewX,wiewY);
+}
+
+function downMove(){
+    if (wiewY <= 0)
+        return; 
+    wiewY--;
+    gameBoard.changeWiew(wiewX,wiewY);
+
+}
+
+function zoom(event){
+  
+    event.preventDefault();
+
+    gameBoard.changeWiew(wiewX,wiewY);
+    if (event.deltaY < 0){
+
+        if(squareSize > 5)
+            zoomSize(squareSize - 4);
+
+        if (event.offsetX > canvasSize/2){
+            rightMove();
+            rightMove();
+        }
+        else{
+            leftMove();
+            leftMove();
+        }                    
+        if (event.offsetY > canvasSize/2)
+            upMove();
+        else
+            downMove();
+        if (wiewX < 0)
+            wiewX = 0;
+        if (wiewY < 0)
+            wiewY = 0;
+        
+        }
+        else{
+            if (event.offsetX > canvasSize/2){
+            leftMove();
+            leftMove();
+        }
+        else{
+            rightMove();
+            rightMove();
+        }                    
+        if (event.offsetY > canvasSize/2){
+            downMove();
+            downMove();
+           }
+        else{
+            upMove();
+            upMove();
+        }
+        if (wiewX < 0)
+            wiewX = 0;
+        if (wiewY < 0)
+            wiewY = 0;
+            zoomSize(squareSize + 4);
+        }
+            
+}
+
+function changeOrange() {
+    
+    colorToPut = blue;
+    gameBoard.changeColor(orange);
+}
+
+function changeRed(){
+  
+    colorToPut = red;
+    gameBoard.changeColor(red);
+}
+
+function changeBlue(){
+   
+    colorToPut = blue;
+    
+    gameBoard.changeColor(blue);
+
+}
+
+function changeGreen(){
+    colorToPut = green;
+    
+    gameBoard.changeColor(green);
+}
+
+function changeSpeed(){
+    let slider = document.getElementById("myRange");
+    currentSpeed = (100 - slider.value) * 8;
+    stopGame();
+    startGame();    
 }
